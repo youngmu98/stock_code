@@ -5,23 +5,40 @@ import { TICKERS } from '@/lib/constants'
 import { MOCK_STOCKS } from '@/lib/mock-data'
 import type { StockAnalysis } from '@/lib/types'
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
 // API 키가 있으면 실제 데이터, 없으면 mock 사용
+// Polygon 무료 플랜: 5 req/min → 캐시 히트(<100ms)면 딜레이 생략, 실제 호출이면 12.5초 간격
 async function getStocks(): Promise<StockAnalysis[]> {
-  if (!process.env.POLYGON_API_KEY || !process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.POLYGON_API_KEY) {
     return MOCK_STOCKS
   }
 
   const { analyzeStock } = await import('@/lib/analyzeStock')
+  const results: StockAnalysis[] = []
+  let lastApiCallAt = 0
 
-  const results = await Promise.allSettled(
-    TICKERS.map((ticker) => analyzeStock(ticker)),
-  )
+  for (let i = 0; i < TICKERS.length; i++) {
+    const ticker = TICKERS[i]
 
-  return results.map((result, i) => {
-    if (result.status === 'fulfilled') return result.value
-    // 개별 종목 실패 시 mock 데이터로 폴백
-    return MOCK_STOCKS[i]
-  })
+    // 직전 요청이 실제 API 호출이었으면 12.5초 간격 유지
+    if (lastApiCallAt > 0) {
+      const gap = Date.now() - lastApiCallAt
+      if (gap < 12_500) await sleep(12_500 - gap)
+    }
+
+    const t0 = Date.now()
+    try {
+      results.push(await analyzeStock(ticker))
+    } catch {
+      results.push(MOCK_STOCKS[i] ?? MOCK_STOCKS[0])
+    }
+
+    // 100ms 이상 걸렸으면 실제 API 호출로 판단 → 다음 요청에 딜레이 적용
+    if (Date.now() - t0 > 100) lastApiCallAt = Date.now()
+  }
+
+  return results
 }
 
 function StockSkeleton() {
@@ -46,7 +63,7 @@ function StockSkeleton() {
 async function StockGrid() {
   const stocks = await getStocks()
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
       {stocks.map((stock) => (
         <StockCard key={stock.ticker} stock={stock} />
       ))}
@@ -81,8 +98,8 @@ export default function Home() {
         {/* 종목 카드 그리드 */}
         <Suspense
           fallback={
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-              {Array.from({ length: 5 }).map((_, i) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+              {Array.from({ length: 30 }).map((_, i) => (
                 <StockSkeleton key={i} />
               ))}
             </div>
