@@ -31,7 +31,8 @@ async function getStocks(): Promise<StockAnalysis[]> {
     try {
       results.push(await analyzeStock(ticker))
     } catch {
-      results.push(MOCK_STOCKS[i] ?? MOCK_STOCKS[0])
+      // rate limit 또는 fetch 실패 → mock으로 폴백
+      results.push(MOCK_STOCKS.find((s) => s.ticker === ticker) ?? MOCK_STOCKS[0])
     }
 
     // 100ms 이상 걸렸으면 실제 API 호출로 판단 → 다음 요청에 딜레이 적용

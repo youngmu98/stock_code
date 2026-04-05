@@ -33,7 +33,9 @@ async function _analyzeStock(ticker: string): Promise<StockAnalysis> {
     const rsiValues = RSI.calculate({ values: quote.closes, period: 14 })
     rsi = rsiValues.length > 0 ? rsiValues[rsiValues.length - 1] : 50
   } else {
-    isStale = quoteResult.reason?.message === 'POLYGON_RATE_LIMIT'
+    // 가격 데이터 실패(rate limit 포함) → throw해서 캐시에 저장되지 않게 함
+    // page.tsx에서 mock 데이터로 폴백 처리
+    throw new Error(quoteResult.reason?.message ?? 'PRICE_FETCH_FAILED')
   }
 
   const newsItems = newsResult.status === 'fulfilled' ? newsResult.value : []
