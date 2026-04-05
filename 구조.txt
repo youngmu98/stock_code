@@ -1,0 +1,8 @@
+1. 전체 아키텍처 구조
+Data Layer: Polygon.io(주가), NewsAPI(뉴스)에서 실시간 데이터 수집.
+
+AI Layer (Claude): 수집된 텍스트 데이터를 분석하여 테마 점수 계산.
+
+Strategy Layer: 기술적 지표(RSI 등)와 AI 점수를 결합해 매수/매도 시그널 생성.
+
+UI Layer: 테마별 대시보드 및 예측 결과 시각화.
