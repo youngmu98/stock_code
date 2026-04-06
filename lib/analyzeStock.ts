@@ -136,6 +136,6 @@ ${newsText}
 }
 
 // 5분 캐시 (ticker별 독립 캐시 키)
-export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v7'], {
+export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v8'], {
   revalidate: 300,
 })
