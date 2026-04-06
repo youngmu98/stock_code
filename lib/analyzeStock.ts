@@ -18,7 +18,7 @@ async function callGemini(prompt: string): Promise<string> {
   if (!apiKey) throw new Error('GEMINI_API_KEY 없음')
 
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -134,6 +134,6 @@ ${newsText}
 }
 
 // 5분 캐시 (ticker별 독립 캐시 키)
-export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v5'], {
+export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v6'], {
   revalidate: 300,
 })
