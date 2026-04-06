@@ -111,7 +111,7 @@ ${newsText}
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      reasoning = `AI 분석 오류: ${msg.slice(0, 80)}`
+      reasoning = `AI 분석 오류: ${msg.slice(0, 200)}`
     }
   }
 
