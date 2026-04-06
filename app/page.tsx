@@ -4,13 +4,15 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { TICKERS } from '@/lib/constants'
 import { MOCK_STOCKS } from '@/lib/mock-data'
 import type { StockAnalysis } from '@/lib/types'
+import { AutoRefresh } from '@/components/AutoRefresh'
+
+// 5분마다 ISR 재생성
+export const revalidate = 300
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-// API 키가 있으면 실제 데이터, 없으면 mock 사용
-// Polygon 무료 플랜: 5 req/min → 캐시 히트(<100ms)면 딜레이 생략, 실제 호출이면 12.5초 간격
 async function getStocks(): Promise<StockAnalysis[]> {
-  if (!process.env.POLYGON_API_KEY) {
+  if (!process.env.POLYGON_API_KEY && !process.env.FINNHUB_API_KEY) {
     return MOCK_STOCKS
   }
 
@@ -21,21 +23,18 @@ async function getStocks(): Promise<StockAnalysis[]> {
   for (let i = 0; i < TICKERS.length; i++) {
     const ticker = TICKERS[i]
 
-    // 직전 요청이 실제 API 호출이었으면 12.5초 간격 유지
     if (lastApiCallAt > 0) {
       const gap = Date.now() - lastApiCallAt
-      if (gap < 12_500) await sleep(12_500 - gap)
+      if (gap < 1000) await sleep(1000 - gap) // Finnhub: 60 req/min → 1초 간격
     }
 
     const t0 = Date.now()
     try {
       results.push(await analyzeStock(ticker))
     } catch {
-      // rate limit 또는 fetch 실패 → mock으로 폴백
       results.push(MOCK_STOCKS.find((s) => s.ticker === ticker) ?? MOCK_STOCKS[0])
     }
 
-    // 100ms 이상 걸렸으면 실제 API 호출로 판단 → 다음 요청에 딜레이 적용
     if (Date.now() - t0 > 100) lastApiCallAt = Date.now()
   }
 
@@ -74,6 +73,7 @@ async function StockGrid() {
 
 export default function Home() {
   const now = new Date().toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -82,6 +82,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
+      {/* 5분마다 자동 새로고침 */}
+      <AutoRefresh intervalMs={300_000} />
+
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
@@ -90,10 +93,10 @@ export default function Home() {
               주식 시그널 대시보드
             </h1>
             <p className="text-sm text-zinc-400 mt-1">
-              AI + RSI 기반 매수/매도 시그널 · 카드 클릭 시 분석 근거 확인
+              AI + RSI 기반 매수/매도 시그널 · 카드 클릭 시 뉴스 요약 및 전망 확인
             </p>
           </div>
-          <p className="text-xs text-zinc-500">{now} 기준</p>
+          <p className="text-xs text-zinc-500">{now} (한국시간) 기준</p>
         </div>
 
         {/* 종목 카드 그리드 */}
@@ -123,7 +126,7 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
             매도 (score &lt; 40)
           </span>
-          <span className="ml-auto">1시간 캐시 · RSI(14) + AI 뉴스 분석</span>
+          <span className="ml-auto">5분 캐시 · RSI(14) + AI 뉴스 분석 · Finnhub 15분 지연</span>
         </div>
       </div>
     </main>

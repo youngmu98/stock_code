@@ -1,10 +1,9 @@
-// Finnhub 무료 티어: 60 req/min, 프로덕션 제한 없음
-// NewsAPI 무료는 localhost 전용이라 Finnhub으로 대체
+// Finnhub 무료 티어: 60 req/min, 최신 뉴스 5건
 import type { NewsItem } from './types'
 
 export async function getStockNews(ticker: string): Promise<NewsItem[]> {
   const apiKey = process.env.FINNHUB_API_KEY
-  if (!apiKey) return [] // API 키 없으면 뉴스 없이 RSI만으로 분석
+  if (!apiKey) return []
 
   const to = new Date()
   const from = new Date()
@@ -18,17 +17,25 @@ export async function getStockNews(ticker: string): Promise<NewsItem[]> {
       `https://finnhub.io/api/v1/company-news?symbol=${ticker}` +
       `&from=${fromStr}&to=${toStr}&token=${apiKey}`
 
-    const res = await fetch(url, { next: { revalidate: 3600 } })
+    const res = await fetch(url, { next: { revalidate: 300 } })
     if (!res.ok) return []
 
     const news = await res.json()
     if (!Array.isArray(news)) return []
 
-    return news.slice(0, 3).map((n: { headline: string; datetime: number; url: string }) => ({
-      headline: n.headline.slice(0, 100),
-      datetime: n.datetime,
-      url: n.url,
-    }))
+    // datetime 내림차순 정렬 → 최신 5건
+    return news
+      .sort(
+        (a: { datetime: number }, b: { datetime: number }) =>
+          b.datetime - a.datetime,
+      )
+      .slice(0, 5)
+      .map((n: { headline: string; summary?: string; datetime: number; url: string }) => ({
+        headline: n.headline,
+        summary: n.summary ? n.summary.slice(0, 200) : undefined,
+        datetime: n.datetime,
+        url: n.url,
+      }))
   } catch {
     return []
   }

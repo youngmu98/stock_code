@@ -2,6 +2,7 @@ export type Signal = 'BUY' | 'SELL' | 'HOLD'
 
 export interface NewsItem {
   headline: string
+  summary?: string
   datetime: number
   url: string
 }

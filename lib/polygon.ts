@@ -1,4 +1,5 @@
-// Polygon.io 무료 티어: 미국 주식, 5 req/min, daily 히스토리
+// Finnhub 무료 티어: 실시간 가격(15분 지연) + 일봉 히스토리
+// Polygon 무료는 이전 거래일 종가만 제공 → Finnhub으로 교체
 
 export interface StockQuote {
   currentPrice: number
@@ -7,35 +8,51 @@ export interface StockQuote {
 }
 
 export async function getStockQuote(ticker: string): Promise<StockQuote> {
-  const apiKey = process.env.POLYGON_API_KEY
-  if (!apiKey) throw new Error('POLYGON_API_KEY 없음')
+  const apiKey = process.env.FINNHUB_API_KEY
+  if (!apiKey) throw new Error('FINNHUB_API_KEY 없음')
 
-  // RSI(14) 계산에 충분한 30일치 데이터
-  const to = new Date()
-  const from = new Date()
-  from.setDate(from.getDate() - 60) // 60일 조회 → 약 40 거래일
+  // 1. 실시간 가격 (15분 지연, 무료)
+  const quoteUrl =
+    `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`
 
-  const fromStr = from.toISOString().split('T')[0]
-  const toStr = to.toISOString().split('T')[0]
+  const quoteRes = await fetch(quoteUrl, { next: { revalidate: 300 } })
+  if (quoteRes.status === 429) throw new Error('FINNHUB_RATE_LIMIT')
+  if (!quoteRes.ok) throw new Error(`Finnhub quote ${quoteRes.status}`)
 
-  const url =
-    `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${fromStr}/${toStr}` +
-    `?adjusted=true&limit=30&sort=asc&apiKey=${apiKey}`
+  const quote = await quoteRes.json()
 
-  const res = await fetch(url, { next: { revalidate: 3600 } })
+  // c=0 이면 장외 시간이거나 데이터 없음
+  if (!quote.c || quote.c === 0) throw new Error('가격 데이터 없음')
 
-  if (res.status === 429) throw new Error('POLYGON_RATE_LIMIT')
-  if (!res.ok) throw new Error(`Polygon ${res.status}`)
+  const currentPrice: number = quote.c
+  const prevClose: number = quote.pc ?? quote.c
+  const changePercent: number =
+    quote.dp ?? ((currentPrice - prevClose) / prevClose) * 100
 
-  const data = await res.json()
-  const bars: Array<{ c: number; t: number }> = data.results ?? []
+  // 2. RSI(14) 계산용 일봉 히스토리
+  const toTs = Math.floor(Date.now() / 1000)
+  const fromTs = toTs - 60 * 24 * 60 * 60 // 60일 전
 
-  if (bars.length < 2) throw new Error('데이터 부족')
+  const candleUrl =
+    `https://finnhub.io/api/v1/stock/candle` +
+    `?symbol=${ticker}&resolution=D&from=${fromTs}&to=${toTs}&token=${apiKey}`
 
-  const closes = bars.map((b) => b.c)
-  const latest = bars[bars.length - 1].c
-  const prev = bars[bars.length - 2].c
-  const changePercent = ((latest - prev) / prev) * 100
+  let closes: number[] = []
+  try {
+    const candleRes = await fetch(candleUrl, { next: { revalidate: 3600 } })
+    if (candleRes.ok) {
+      const candle = await candleRes.json()
+      if (candle.s === 'ok' && Array.isArray(candle.c) && candle.c.length >= 2) {
+        closes = candle.c
+      }
+    }
+  } catch {
+    // 히스토리 실패 → 현재가 기반 최소 배열 (RSI 계산은 의미 없지만 crash 방지)
+  }
 
-  return { currentPrice: latest, changePercent, closes }
+  if (closes.length < 2) {
+    closes = [prevClose, currentPrice]
+  }
+
+  return { currentPrice, changePercent, closes }
 }

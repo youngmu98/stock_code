@@ -27,13 +27,36 @@ const SIGNAL_LABEL = {
   HOLD: '관망',
 }
 
-export function StockDialog({ stock, open, onOpenChange }: Props) {
-  const updatedAt = new Date(stock.lastUpdated).toLocaleString('ko-KR', {
+function formatKoreanTime(
+  isoOrUnix: string | number,
+  format: 'datetime' | 'newsdate' = 'datetime',
+) {
+  const date =
+    typeof isoOrUnix === 'number'
+      ? new Date(isoOrUnix * 1000)
+      : new Date(isoOrUnix)
+
+  if (format === 'newsdate') {
+    return date.toLocaleString('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  return date.toLocaleString('ko-KR', {
+    timeZone: 'Asia/Seoul',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+export function StockDialog({ stock, open, onOpenChange }: Props) {
+  const updatedAt = formatKoreanTime(stock.lastUpdated)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,7 +103,7 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
 
           {/* AI 분석 */}
           <div className="bg-zinc-800/50 rounded-lg p-4">
-            <p className="text-xs text-zinc-400 mb-2 font-medium">AI 분석 근거</p>
+            <p className="text-xs text-zinc-400 mb-2 font-medium">AI 분석 및 전망</p>
             <p className="text-sm text-zinc-200 leading-relaxed">
               {stock.reasoning}
             </p>
@@ -89,22 +112,33 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
           {/* 관련 뉴스 */}
           {stock.newsItems.length > 0 && (
             <div>
-              <p className="text-xs text-zinc-400 mb-2 font-medium">관련 뉴스</p>
-              <ul className="space-y-2">
+              <p className="text-xs text-zinc-400 mb-2 font-medium">
+                관련 뉴스 ({stock.newsItems.length}건)
+              </p>
+              <ul className="space-y-3">
                 {stock.newsItems.map((news, i) => (
-                  <li key={i} className="text-xs text-zinc-300 leading-relaxed">
-                    <span className="text-zinc-500 mr-1">•</span>
+                  <li key={i} className="border-l-2 border-zinc-700 pl-3">
+                    <p className="text-xs text-zinc-500 mb-0.5">
+                      {formatKoreanTime(news.datetime, 'newsdate')} (한국시간)
+                    </p>
                     {news.url && news.url !== '#' ? (
                       <a
                         href={news.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="hover:text-blue-400 transition-colors"
+                        className="text-xs text-zinc-300 leading-relaxed hover:text-blue-400 transition-colors"
                       >
                         {news.headline}
                       </a>
                     ) : (
-                      news.headline
+                      <p className="text-xs text-zinc-300 leading-relaxed">
+                        {news.headline}
+                      </p>
+                    )}
+                    {news.summary && (
+                      <p className="text-xs text-zinc-500 mt-1 leading-relaxed line-clamp-2">
+                        {news.summary}
+                      </p>
                     )}
                   </li>
                 ))}
@@ -115,7 +149,7 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
           {/* 업데이트 시간 */}
           <p className="text-xs text-zinc-500 text-right">
             {stock.isStale ? '⚠ 캐시된 데이터 · ' : ''}
-            {updatedAt} 기준
+            {updatedAt} (한국시간) 기준
           </p>
         </div>
       </DialogContent>
