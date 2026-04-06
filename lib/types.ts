@@ -3,6 +3,7 @@ export type Signal = 'BUY' | 'SELL' | 'HOLD'
 export interface NewsItem {
   headline: string
   summary?: string
+  koreanSummary?: string // Claude가 생성한 한글 요약
   datetime: number
   url: string
 }

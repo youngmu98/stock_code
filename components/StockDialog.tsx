@@ -121,7 +121,24 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
                     <p className="text-xs text-zinc-500 mb-0.5">
                       {formatKoreanTime(news.datetime, 'newsdate')} (한국시간)
                     </p>
-                    {news.url && news.url !== '#' ? (
+                    {/* 한글 요약이 있으면 우선 표시, 없으면 원문 헤드라인 */}
+                    {news.koreanSummary ? (
+                      <>
+                        <p className="text-xs text-zinc-200 leading-relaxed">
+                          {news.koreanSummary}
+                        </p>
+                        {news.url && news.url !== '#' && (
+                          <a
+                            href={news.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors mt-0.5 block truncate"
+                          >
+                            {news.headline}
+                          </a>
+                        )}
+                      </>
+                    ) : news.url && news.url !== '#' ? (
                       <a
                         href={news.url}
                         target="_blank"
@@ -133,11 +150,6 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
                     ) : (
                       <p className="text-xs text-zinc-300 leading-relaxed">
                         {news.headline}
-                      </p>
-                    )}
-                    {news.summary && (
-                      <p className="text-xs text-zinc-500 mt-1 leading-relaxed line-clamp-2">
-                        {news.summary}
                       </p>
                     )}
                   </li>

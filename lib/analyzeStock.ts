@@ -6,11 +6,12 @@ import { getStockQuote } from './polygon'
 import { getStockNews } from './news'
 import { determineSignal } from './determineSignal'
 import { COMPANIES } from './constants'
-import type { StockAnalysis } from './types'
+import type { StockAnalysis, NewsItem } from './types'
 
 const ClaudeResponseSchema = z.object({
   score: z.number().min(0).max(100),
   reasoning: z.string(),
+  newsSummaries: z.array(z.string()).optional(), // 각 뉴스 한글 요약
 })
 
 async function _analyzeStock(ticker: string): Promise<StockAnalysis> {
@@ -34,39 +35,44 @@ async function _analyzeStock(ticker: string): Promise<StockAnalysis> {
     throw new Error(quoteResult.reason?.message ?? 'PRICE_FETCH_FAILED')
   }
 
-  const newsItems = newsResult.status === 'fulfilled' ? newsResult.value : []
+  const rawNewsItems = newsResult.status === 'fulfilled' ? newsResult.value : []
 
   // 뉴스를 날짜 포함해서 프롬프트에 전달
   const newsText =
-    newsItems.length > 0
-      ? newsItems
-          .map((n) => {
+    rawNewsItems.length > 0
+      ? rawNewsItems
+          .map((n, i) => {
             const date = new Date(n.datetime * 1000).toLocaleDateString('ko-KR', {
               timeZone: 'Asia/Seoul',
               month: 'short',
               day: 'numeric',
             })
-            return `- [${date}] ${n.headline}`
+            return `${i + 1}. [${date}] ${n.headline}`
           })
           .join('\n')
       : '뉴스 없음'
 
   let score = 50
-  let reasoning = '분석 일시 불가'
+  let reasoning = 'AI 분석을 위해 ANTHROPIC_API_KEY가 필요합니다.'
+  let newsItems: NewsItem[] = rawNewsItems
 
-  try {
-    const client = new Anthropic()
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10000)
+  const hasClaudeKey = !!process.env.ANTHROPIC_API_KEY
 
-    const message = await client.messages.create(
-      {
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
-        messages: [
-          {
-            role: 'user',
-            content: `다음 주식 데이터를 분석하고 JSON으로만 응답하세요 (다른 텍스트 없이):
+  if (hasClaudeKey) {
+    try {
+      const client = new Anthropic()
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 15000)
+
+      const message = await client.messages.create(
+        {
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 600,
+          messages: [
+            {
+              role: 'user',
+              content: `다음 주식 데이터를 분석하고 JSON으로만 응답하세요 (마크다운 코드블록 없이 순수 JSON만):
+
 - 종목: ${ticker} (${COMPANIES[ticker] ?? ticker})
 - 현재 RSI(14): ${rsi.toFixed(1)}
 - 최근 뉴스 (최신순):
@@ -80,31 +86,45 @@ ${newsText}
 - 긍정 뉴스 1건당: +15점
 - 부정 뉴스 1건당: -15점
 
-응답 형식:
-{"score": 0-100, "reasoning": "RSI {값}로 {상태}. 뉴스: {핵심 뉴스 1-2건 한줄 요약}. 전망: {단기 방향성 및 투자 판단 한 줄}."}
+응답 형식 (반드시 이 JSON 구조만):
+{
+  "score": 0~100 사이 숫자,
+  "reasoning": "RSI {값}로 {상태}. 뉴스: {핵심 뉴스 1~2건 한국어 요약}. 전망: {단기 방향성 및 투자 판단 한 줄}.",
+  "newsSummaries": ["뉴스1 한국어 요약 (30자 이내)", "뉴스2 한국어 요약", ...]
+}
 
-reasoning은 반드시 한국어로, 뉴스 요약과 단기 전망을 모두 포함하세요.`,
-          },
-        ],
-      },
-      { signal: controller.signal as AbortSignal },
-    )
+newsSummaries 배열은 뉴스 순서 그대로, 모든 텍스트는 한국어로.`,
+            },
+          ],
+        },
+        { signal: controller.signal as AbortSignal },
+      )
 
-    clearTimeout(timeout)
+      clearTimeout(timeout)
 
-    const text =
-      message.content[0].type === 'text' ? message.content[0].text : ''
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
+      const text =
+        message.content[0].type === 'text' ? message.content[0].text : ''
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
 
-    if (jsonMatch) {
-      const parsed = ClaudeResponseSchema.safeParse(JSON.parse(jsonMatch[0]))
-      if (parsed.success) {
-        score = parsed.data.score
-        reasoning = parsed.data.reasoning
+      if (jsonMatch) {
+        const parsed = ClaudeResponseSchema.safeParse(JSON.parse(jsonMatch[0]))
+        if (parsed.success) {
+          score = parsed.data.score
+          reasoning = parsed.data.reasoning
+
+          // 한글 요약을 각 뉴스에 붙임
+          if (parsed.data.newsSummaries) {
+            newsItems = rawNewsItems.map((n, i) => ({
+              ...n,
+              koreanSummary: parsed.data.newsSummaries?.[i],
+            }))
+          }
+        }
       }
+    } catch {
+      // 타임아웃 또는 API 실패 → 기본값 유지
+      reasoning = '분석 일시 불가 (API 오류)'
     }
-  } catch {
-    // 타임아웃 또는 API 실패 → 기본값 유지
   }
 
   return {
@@ -122,7 +142,7 @@ reasoning은 반드시 한국어로, 뉴스 요약과 단기 전망을 모두 �
   }
 }
 
-// 5분 캐시 (Finnhub 실시간 반영)
+// 5분 캐시
 export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis'], {
   revalidate: 300,
 })
