@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { StockDialog } from './StockDialog'
 import type { StockAnalysis } from '@/lib/types'
 
 interface Props {
-  stock: StockAnalysis
+  ticker: string
 }
 
 const SIGNAL_COLORS = {
@@ -19,7 +20,7 @@ const SIGNAL_COLORS = {
 const SIGNAL_BADGE = {
   BUY: 'bg-blue-500 hover:bg-blue-500 text-white',
   SELL: 'bg-red-500 hover:bg-red-500 text-white',
-  HOLD: 'bg-zinc-500 hover:bg-zinc-500 text-white',
+  HOLD: 'bg-zinc-600 hover:bg-zinc-600 text-white',
 }
 
 const SIGNAL_LABEL = {
@@ -28,8 +29,73 @@ const SIGNAL_LABEL = {
   HOLD: '관망',
 }
 
-export function StockCard({ stock }: Props) {
+// score(0~100)를 signal별 직관적인 강도로 변환
+function getStrengthLabel(
+  signal: 'BUY' | 'SELL' | 'HOLD',
+  score: number,
+): string {
+  if (signal === 'BUY') {
+    // score 60~100 → 매수 강도 표시
+    const pct = Math.round(((score - 60) / 40) * 100)
+    if (pct >= 75) return '강한 매수'
+    if (pct >= 40) return '매수'
+    return '약한 매수'
+  }
+  if (signal === 'SELL') {
+    // score 0~40 → 매도 강도 표시
+    const pct = Math.round(((40 - score) / 40) * 100)
+    if (pct >= 75) return '강한 매도'
+    if (pct >= 40) return '매도'
+    return '약한 매도'
+  }
+  // HOLD: RSI 기반 중립 표현
+  if (score >= 55) return '중립 (매수 우세)'
+  if (score <= 45) return '중립 (매도 우세)'
+  return '중립'
+}
+
+// 카드의 프로그레스 바 너비: BUY는 score 그대로, SELL은 반전
+function getBarWidth(signal: 'BUY' | 'SELL' | 'HOLD', score: number): number {
+  if (signal === 'SELL') return 100 - score // 매도 강도
+  return score
+}
+
+function CardSkeleton() {
+  return (
+    <div className="p-5 rounded-xl border border-zinc-800">
+      <div className="flex justify-between mb-3">
+        <div className="space-y-1">
+          <Skeleton className="h-3 w-10 bg-zinc-800" />
+          <Skeleton className="h-4 w-28 bg-zinc-800" />
+        </div>
+        <Skeleton className="h-6 w-14 bg-zinc-800 rounded-full" />
+      </div>
+      <Skeleton className="h-1.5 w-full bg-zinc-800 rounded-full mb-3" />
+      <div className="flex justify-between">
+        <Skeleton className="h-6 w-20 bg-zinc-800" />
+        <Skeleton className="h-4 w-12 bg-zinc-800" />
+      </div>
+    </div>
+  )
+}
+
+export function StockCard({ ticker }: Props) {
+  const [stock, setStock] = useState<StockAnalysis | null>(null)
   const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    fetch(`/api/analyze/${ticker}`)
+      .then((r) => r.json())
+      .then((data: StockAnalysis) => setStock(data))
+      .catch(() => {
+        // fetch 실패 시 기본값 표시
+      })
+  }, [ticker])
+
+  if (!stock) return <CardSkeleton />
+
+  const barWidth = getBarWidth(stock.signal, stock.score)
+  const strengthLabel = getStrengthLabel(stock.signal, stock.score)
 
   return (
     <>
@@ -50,12 +116,12 @@ export function StockCard({ stock }: Props) {
           </Badge>
         </div>
 
-        {/* 점수 바 */}
+        {/* 신호 강도 바 */}
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-zinc-400">신호 강도</span>
-            <span className="text-xs font-mono text-zinc-300">
-              {stock.score}%
+            <span className="text-xs text-zinc-400">{strengthLabel}</span>
+            <span className="text-xs font-mono text-zinc-500">
+              RSI {stock.rsi.toFixed(0)}
             </span>
           </div>
           <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
@@ -67,7 +133,7 @@ export function StockCard({ stock }: Props) {
                     ? 'bg-red-500'
                     : 'bg-zinc-500'
               }`}
-              style={{ width: `${stock.score}%` }}
+              style={{ width: `${barWidth}%` }}
             />
           </div>
         </div>
@@ -86,11 +152,6 @@ export function StockCard({ stock }: Props) {
             {stock.changePercent.toFixed(2)}%
           </span>
         </div>
-
-        {/* 스테일 배지 */}
-        {stock.isStale && (
-          <p className="mt-2 text-xs text-amber-400/70">⚠ 캐시된 데이터</p>
-        )}
       </Card>
 
       <StockDialog stock={stock} open={open} onOpenChange={setOpen} />

@@ -1,75 +1,6 @@
-import { Suspense } from 'react'
-import { StockCard } from '@/components/StockCard'
-import { Skeleton } from '@/components/ui/skeleton'
 import { TICKERS } from '@/lib/constants'
-import { MOCK_STOCKS } from '@/lib/mock-data'
-import type { StockAnalysis } from '@/lib/types'
+import { StockCard } from '@/components/StockCard'
 import { AutoRefresh } from '@/components/AutoRefresh'
-
-// 5분마다 ISR 재생성
-export const revalidate = 300
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
-async function getStocks(): Promise<StockAnalysis[]> {
-  if (!process.env.POLYGON_API_KEY && !process.env.FINNHUB_API_KEY) {
-    return MOCK_STOCKS
-  }
-
-  const { analyzeStock } = await import('@/lib/analyzeStock')
-  const results: StockAnalysis[] = []
-  let lastApiCallAt = 0
-
-  for (let i = 0; i < TICKERS.length; i++) {
-    const ticker = TICKERS[i]
-
-    if (lastApiCallAt > 0) {
-      const gap = Date.now() - lastApiCallAt
-      if (gap < 1000) await sleep(1000 - gap) // Finnhub: 60 req/min → 1초 간격
-    }
-
-    const t0 = Date.now()
-    try {
-      results.push(await analyzeStock(ticker))
-    } catch {
-      results.push(MOCK_STOCKS.find((s) => s.ticker === ticker) ?? MOCK_STOCKS[0])
-    }
-
-    if (Date.now() - t0 > 100) lastApiCallAt = Date.now()
-  }
-
-  return results
-}
-
-function StockSkeleton() {
-  return (
-    <div className="p-5 rounded-xl border border-zinc-800">
-      <div className="flex justify-between mb-3">
-        <div className="space-y-1">
-          <Skeleton className="h-3 w-10 bg-zinc-800" />
-          <Skeleton className="h-4 w-28 bg-zinc-800" />
-        </div>
-        <Skeleton className="h-6 w-14 bg-zinc-800 rounded-full" />
-      </div>
-      <Skeleton className="h-1.5 w-full bg-zinc-800 rounded-full mb-3" />
-      <div className="flex justify-between">
-        <Skeleton className="h-6 w-20 bg-zinc-800" />
-        <Skeleton className="h-4 w-12 bg-zinc-800" />
-      </div>
-    </div>
-  )
-}
-
-async function StockGrid() {
-  const stocks = await getStocks()
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-      {stocks.map((stock) => (
-        <StockCard key={stock.ticker} stock={stock} />
-      ))}
-    </div>
-  )
-}
 
 export default function Home() {
   const now = new Date().toLocaleString('ko-KR', {
@@ -99,34 +30,28 @@ export default function Home() {
           <p className="text-xs text-zinc-500">{now} (한국시간) 기준</p>
         </div>
 
-        {/* 종목 카드 그리드 */}
-        <Suspense
-          fallback={
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {Array.from({ length: 30 }).map((_, i) => (
-                <StockSkeleton key={i} />
-              ))}
-            </div>
-          }
-        >
-          <StockGrid />
-        </Suspense>
+        {/* 종목 카드 그리드 — 각 카드가 독립적으로 API 호출 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {TICKERS.map((ticker) => (
+            <StockCard key={ticker} ticker={ticker} />
+          ))}
+        </div>
 
         {/* 범례 */}
         <div className="mt-8 flex items-center gap-6 text-xs text-zinc-500">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
-            매수 (score &gt; 60)
+            매수 (AI 점수 &gt; 60)
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-zinc-500 inline-block" />
-            관망 (score 40–60)
+            관망 (AI 점수 40–60)
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
-            매도 (score &lt; 40)
+            매도 (AI 점수 &lt; 40)
           </span>
-          <span className="ml-auto">5분 캐시 · RSI(14) + AI 뉴스 분석 · Finnhub 15분 지연</span>
+          <span className="ml-auto">5분 캐시 · RSI(14) + Claude Haiku 4.5 분석</span>
         </div>
       </div>
     </main>

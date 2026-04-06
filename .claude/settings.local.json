@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\")",
+      "Bash(jobs)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(cd /tmp)",
+      "Bash(npx create-next-app@latest stock-dashboard --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(rm -rf stock-dashboard)",
+      "Bash(npx create-next-app@14 stock-dashboard --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\")",
+      "Read(//tmp/**)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add dialog card badge skeleton)",
+      "Bash(cp -r /tmp/stock-dashboard/app /c/Users/dbdud/project/claude_project/stock_code/)",
+      "Bash(cp -r /tmp/stock-dashboard/components /c/Users/dbdud/project/claude_project/stock_code/)",
+      "Bash(cp -r /tmp/stock-dashboard/lib /c/Users/dbdud/project/claude_project/stock_code/)",
+      "Bash(cp /tmp/stock-dashboard/package.json /c/Users/dbdud/project/claude_project/stock_code/)",
+      "Bash(cp /tmp/stock-dashboard/package-lock.json /c/Users/dbdud/project/claude_project/stock_code/)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Skill(browse)",
+      "Bash(npx vercel:*)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
