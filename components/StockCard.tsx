@@ -9,6 +9,7 @@ import type { StockAnalysis } from '@/lib/types'
 
 interface Props {
   ticker: string
+  delay?: number // ms — 동시 요청 분산용
 }
 
 const SIGNAL_COLORS = {
@@ -79,18 +80,19 @@ function CardSkeleton() {
   )
 }
 
-export function StockCard({ ticker }: Props) {
+export function StockCard({ ticker, delay = 0 }: Props) {
   const [stock, setStock] = useState<StockAnalysis | null>(null)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/analyze/${ticker}`)
-      .then((r) => r.json())
-      .then((data: StockAnalysis) => setStock(data))
-      .catch(() => {
-        // fetch 실패 시 기본값 표시
-      })
-  }, [ticker])
+    const timer = setTimeout(() => {
+      fetch(`/api/analyze/${ticker}`)
+        .then((r) => r.json())
+        .then((data: StockAnalysis) => setStock(data))
+        .catch(() => {})
+    }, delay)
+    return () => clearTimeout(timer)
+  }, [ticker, delay])
 
   if (!stock) return <CardSkeleton />
 

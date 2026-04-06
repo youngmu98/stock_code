@@ -32,8 +32,9 @@ export default function Home() {
 
         {/* 종목 카드 그리드 — 각 카드가 독립적으로 API 호출 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {TICKERS.map((ticker) => (
-            <StockCard key={ticker} ticker={ticker} />
+          {/* 300ms 간격으로 순차 요청 → Gemini 15 RPM 제한 내 유지 */}
+          {TICKERS.map((ticker, i) => (
+            <StockCard key={ticker} ticker={ticker} delay={i * 300} />
           ))}
         </div>
 
