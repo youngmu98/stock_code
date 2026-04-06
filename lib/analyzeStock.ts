@@ -109,8 +109,9 @@ ${newsText}
           }
         }
       }
-    } catch {
-      reasoning = 'AI 분석 일시 불가'
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      reasoning = `AI 분석 오류: ${msg.slice(0, 80)}`
     }
   }
 
