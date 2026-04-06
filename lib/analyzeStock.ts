@@ -27,7 +27,7 @@ async function callGroq(prompt: string): Promise<string> {
       model: 'llama-3.1-8b-instant',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.3,
-      max_tokens: 500,
+      max_tokens: 700,
     }),
   })
 
@@ -94,9 +94,9 @@ ${newsText}
 - RSI < 30: +25 / RSI 30-45: +10 / RSI 55-70: -10 / RSI > 70: -25
 - 긍정 뉴스 1건당: +15 / 부정 뉴스 1건당: -15
 
-{"score":0~100,"reasoning":"RSI {값} {상태}. 뉴스: {핵심 1~2건 한국어 요약}. 전망: {단기 투자 판단 한 줄}.","newsSummaries":["뉴스1 한국어 요약 25자 이내","뉴스2 요약",...]}
+{"score":0~100,"reasoning":"RSI {값}으로 {과매수/과매도/중립} 상태. {최근 뉴스 핵심 2건 요약, 각 20자 이내}. {뉴스가 주가에 미치는 영향 1문장}. 단기 전망: {매수/매도/관망 근거와 방향성 1문장}. 총 100자 내외.","newsSummaries":["뉴스1 한국어 요약 25자 이내","뉴스2 요약",...]}
 
-모든 텍스트 반드시 한국어.`
+reasoning은 반드시 100자 내외 한국어. 모든 텍스트 반드시 한국어.`
 
       const text = await callGroq(prompt)
       const jsonMatch = text.match(/\{[\s\S]*\}/)
@@ -151,6 +151,6 @@ ${newsText}
 }
 
 // 5분 캐시 (ticker별 독립 캐시 키)
-export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v9'], {
+export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v10'], {
   revalidate: 300,
 })

@@ -60,7 +60,7 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-md">
+      <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div>
@@ -104,7 +104,7 @@ export function StockDialog({ stock, open, onOpenChange }: Props) {
           {/* AI 분석 */}
           <div className="bg-zinc-800/50 rounded-lg p-4">
             <p className="text-xs text-zinc-400 mb-2 font-medium">AI 분석 및 전망</p>
-            <p className="text-sm text-zinc-200 leading-relaxed">
+            <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-line">
               {stock.reasoning}
             </p>
           </div>

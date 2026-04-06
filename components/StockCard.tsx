@@ -130,8 +130,8 @@ export function StockCard({ ticker, delay = 0 }: Props) {
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs text-zinc-400">{strengthLabel}</span>
-            <span className="text-xs font-mono text-zinc-500">
-              RSI {stock.rsi.toFixed(0)}
+            <span className="text-xs font-mono text-zinc-400 font-semibold">
+              {stock.score}%
             </span>
           </div>
           <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
