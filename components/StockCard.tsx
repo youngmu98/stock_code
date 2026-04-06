@@ -87,8 +87,16 @@ export function StockCard({ ticker, delay = 0 }: Props) {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetch(`/api/analyze/${ticker}`)
-        .then((r) => r.json())
-        .then((data: StockAnalysis) => setStock(data))
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`)
+          return r.json()
+        })
+        .then((data: StockAnalysis) => {
+          // 필수 필드 검증 후 세팅
+          if (data && typeof data.currentPrice === 'number' && data.ticker) {
+            setStock(data)
+          }
+        })
         .catch(() => {})
     }, delay)
     return () => clearTimeout(timer)
