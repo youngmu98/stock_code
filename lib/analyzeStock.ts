@@ -102,21 +102,36 @@ ${newsText}
       const jsonMatch = text.match(/\{[\s\S]*\}/)
 
       if (jsonMatch) {
-        const parsed = GeminiResponseSchema.safeParse(JSON.parse(jsonMatch[0]))
-        if (parsed.success) {
-          score = parsed.data.score
-          reasoning = parsed.data.reasoning
-          if (parsed.data.newsSummaries) {
-            newsItems = rawNewsItems.map((n, i) => ({
-              ...n,
-              koreanSummary: parsed.data.newsSummaries?.[i],
-            }))
+        // Llama가 생성하는 trailing comma, 줄바꿈 등 정제
+        const cleaned = jsonMatch[0]
+          .replace(/,(\s*[}\]])/g, '$1') // trailing comma 제거
+          .replace(/[\x00-\x1F\x7F]/g, (c) => // 제어문자 이스케이프
+            c === '\n' ? '\\n' : c === '\t' ? '\\t' : '',
+          )
+
+        try {
+          const parsed = GeminiResponseSchema.safeParse(JSON.parse(cleaned))
+          if (parsed.success) {
+            score = parsed.data.score
+            reasoning = parsed.data.reasoning
+            if (parsed.data.newsSummaries) {
+              newsItems = rawNewsItems.map((n, i) => ({
+                ...n,
+                koreanSummary: parsed.data.newsSummaries?.[i],
+              }))
+            }
           }
+        } catch {
+          // JSON 파싱 실패 시 score/reasoning만 정규식으로 추출
+          const scoreMatch = text.match(/"score"\s*:\s*(\d+)/)
+          const reasonMatch = text.match(/"reasoning"\s*:\s*"([^"]+)"/)
+          if (scoreMatch) score = Math.min(100, Math.max(0, parseInt(scoreMatch[1])))
+          if (reasonMatch) reasoning = reasonMatch[1]
         }
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      reasoning = `AI 분석 오류: ${msg.slice(0, 100)}`
+      reasoning = `AI 분석 오류: ${msg.slice(0, 80)}`
     }
   }
 
@@ -136,6 +151,6 @@ ${newsText}
 }
 
 // 5분 캐시 (ticker별 독립 캐시 키)
-export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v8'], {
+export const analyzeStock = unstable_cache(_analyzeStock, ['stock-analysis-v9'], {
   revalidate: 300,
 })
