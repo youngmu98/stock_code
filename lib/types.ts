@@ -14,12 +14,15 @@ export interface StockAnalysis {
   currentPrice: number
   changePercent: number
   rsi: number
+  ma20: number | null
+  ma50: number | null
+  volumeRatio: number | null  // 현재 거래량 / 20일 평균 거래량
   signal: Signal
   score: number
   reasoning: string
   newsItems: NewsItem[]
   lastUpdated: string // ISO string
-  isStale: boolean // Polygon 429 hit
+  isStale: boolean
 }
 
 export interface ReplayEntry {

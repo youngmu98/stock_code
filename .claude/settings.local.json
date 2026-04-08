@@ -24,7 +24,11 @@
       "Bash(git commit -m ':*)",
       "Skill(browse)",
       "Bash(npx vercel:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(curl -s -X POST 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCLoVRHQcP_Es2Ta3oKpP05VAEaDlrcG5Q' -H 'Content-Type: application/json' -d '{\"contents\":[{\"parts\":[{\"text\":\"안녕\"}]}]}')",
+      "Bash(cat app/api/price/*/route.ts)",
+      "Bash(npx next:*)",
+      "Bash(git push:*)"
     ]
   }
 }

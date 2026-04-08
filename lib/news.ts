@@ -23,13 +23,13 @@ export async function getStockNews(ticker: string): Promise<NewsItem[]> {
     const news = await res.json()
     if (!Array.isArray(news)) return []
 
-    // datetime 내림차순 정렬 → 최신 5건
+    // datetime 내림차순 정렬 → 최신 10건
     return news
       .sort(
         (a: { datetime: number }, b: { datetime: number }) =>
           b.datetime - a.datetime,
       )
-      .slice(0, 5)
+      .slice(0, 10)
       .map((n: { headline: string; summary?: string; datetime: number; url: string }) => ({
         headline: n.headline,
         summary: n.summary ? n.summary.slice(0, 200) : undefined,

@@ -93,6 +93,41 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
             />
           </div>
 
+          {/* MA 이동평균 지표 */}
+          {(stock.ma20 !== null || stock.ma50 !== null) && (
+            <div className="bg-zinc-800/30 rounded-lg p-3 space-y-2">
+              <p className="text-xs text-zinc-500 font-medium mb-1">이동평균 (이전 거래일 기준)</p>
+              <div className="grid grid-cols-2 gap-2">
+                {stock.ma20 !== null && (
+                  <MaRow
+                    label="MA20"
+                    value={stock.ma20}
+                    price={stock.currentPrice}
+                  />
+                )}
+                {stock.ma50 !== null && (
+                  <MaRow
+                    label="MA50"
+                    value={stock.ma50}
+                    price={stock.currentPrice}
+                  />
+                )}
+              </div>
+              {stock.ma20 !== null && stock.ma50 !== null && (
+                <p className="text-xs mt-1">
+                  {stock.ma20 > stock.ma50 ? (
+                    <span className="text-blue-400">↑ 단기MA &gt; 장기MA (골든크로스 구조)</span>
+                  ) : (
+                    <span className="text-red-400">↓ 단기MA &lt; 장기MA (데드크로스 구조)</span>
+                  )}
+                  {stock.volumeRatio !== null && stock.volumeRatio >= 1.5 && (
+                    <span className="text-yellow-400 ml-2">· 거래량 {stock.volumeRatio.toFixed(1)}× 급증</span>
+                  )}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* AI 분석 */}
           <div className="bg-zinc-800/50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
@@ -170,9 +205,14 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
             </div>
           )}
 
-          <p className="text-xs text-zinc-500 text-right">
-            {updatedAt} (한국시간) 기준
-          </p>
+          <div className="pt-1 border-t border-zinc-800 space-y-1">
+            <p className="text-xs text-zinc-500 text-right">
+              {updatedAt} (한국시간) 기준 · 데이터: Finnhub · Polygon.io
+            </p>
+            <p className="text-xs text-zinc-600 text-right">
+              ⚠ 투자 판단의 최종 책임은 본인에게 있습니다. 참고용으로만 활용하세요.
+            </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
@@ -192,6 +232,22 @@ function Metric({
     <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
       <p className="text-xs text-zinc-400 mb-1">{label}</p>
       <p className={`text-sm font-mono font-semibold ${valueClass}`}>{value}</p>
+    </div>
+  )
+}
+
+function MaRow({ label, value, price }: { label: string; value: number; price: number }) {
+  const diff = ((price / value - 1) * 100).toFixed(1)
+  const above = price >= value
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-xs text-zinc-500">{label}</span>
+      <span className="text-xs font-mono text-zinc-300">
+        ${value.toFixed(2)}{' '}
+        <span className={above ? 'text-blue-400' : 'text-red-400'}>
+          {above ? '▲' : '▼'}{Math.abs(parseFloat(diff))}%
+        </span>
+      </span>
     </div>
   )
 }

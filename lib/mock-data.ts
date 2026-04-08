@@ -7,7 +7,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 55,
     reasoning: 'RSI 42.3으로 중립권. iPhone 수요 안정적. 단기 방향성 불명확.',
     newsItems: [{ headline: 'Apple iPhone demand remains steady amid macro headwinds', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'NVDA', companyName: 'NVIDIA Corp.',
@@ -15,7 +15,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 78,
     reasoning: 'RSI 28.7로 강한 과매도. Blackwell GPU 수요 폭증 뉴스 2건. 단기 반등 확률 높음.',
     newsItems: [{ headline: 'NVIDIA Blackwell GPU demand exceeds supply', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'MSFT', companyName: 'Microsoft Corp.',
@@ -23,7 +23,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 52,
     reasoning: 'RSI 55.4로 중립권. Azure 클라우드 성장 안정적. 특별한 촉매 없음.',
     newsItems: [{ headline: 'Microsoft Azure growth stabilizes at 25% YoY', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'GOOGL', companyName: 'Alphabet Inc.',
@@ -31,7 +31,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 65,
     reasoning: 'RSI 35.8로 과매도 진입. AI 검색 광고 수익 개선 뉴스. 중장기 매수 유효.',
     newsItems: [{ headline: 'Google AI Overviews boosting ad click-through rates', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'AMZN', companyName: 'Amazon.com Inc.',
@@ -39,7 +39,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 53,
     reasoning: 'RSI 48.2로 중립권. AWS 성장 견조. 광고 사업 호조로 하방 제한.',
     newsItems: [{ headline: 'Amazon AWS revenue beats estimates on AI workload demand', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'META', companyName: 'Meta Platforms Inc.',
@@ -47,7 +47,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 58,
     reasoning: 'RSI 62.1로 중립 상단. 광고 매출 호조. 추가 상승 여력 제한적.',
     newsItems: [{ headline: 'Meta ad revenue surges as AI-powered targeting improves', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'TSLA', companyName: 'Tesla Inc.',
@@ -55,7 +55,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'SELL', score: 31,
     reasoning: 'RSI 72.1로 강한 과매수. 유럽 판매 부진 뉴스 2건. 단기 조정 가능성.',
     newsItems: [{ headline: 'Tesla Europe sales drop 40% YoY amid brand issues', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'AVGO', companyName: 'Broadcom Inc.',
@@ -63,7 +63,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 51,
     reasoning: 'RSI 44.3으로 중립권. AI 반도체 수요 견조. VMware 통합 순항 중.',
     newsItems: [{ headline: 'Broadcom VMware integration ahead of schedule', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'LLY', companyName: 'Eli Lilly and Co.',
@@ -71,7 +71,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 62,
     reasoning: 'RSI 38.5로 과매도 근접. 비만 치료제 Mounjaro 수요 급증. 단기 매수 유효.',
     newsItems: [{ headline: 'Eli Lilly Mounjaro demand continues to outpace supply', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'JPM', companyName: 'JPMorgan Chase & Co.',
@@ -79,7 +79,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 53,
     reasoning: 'RSI 52.7로 중립권. 금리 안정화로 NIM 방어. 투자은행 부문 회복세.',
     newsItems: [{ headline: 'JPMorgan beats Q4 estimates on investment banking rebound', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'V', companyName: 'Visa Inc.',
@@ -87,7 +87,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 55,
     reasoning: 'RSI 57.3으로 중립 상단. 글로벌 결제량 증가. 안정적 성장세 유지.',
     newsItems: [{ headline: 'Visa payment volume grows 8% YoY on travel recovery', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'UNH', companyName: 'UnitedHealth Group Inc.',
@@ -95,7 +95,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 50,
     reasoning: 'RSI 41.2로 중립권. 의료비 증가 압박. 보험료 인상으로 일부 상쇄.',
     newsItems: [{ headline: 'UnitedHealth raises premiums to offset rising medical costs', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'XOM', companyName: 'Exxon Mobil Corp.',
@@ -103,7 +103,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 54,
     reasoning: 'RSI 55.8로 중립권. 유가 안정화. Pioneer 인수 시너지 기대.',
     newsItems: [{ headline: 'ExxonMobil Pioneer acquisition synergies ahead of target', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'MA', companyName: 'Mastercard Inc.',
@@ -111,7 +111,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 56,
     reasoning: 'RSI 58.4로 중립 상단. 크로스보더 결제 성장 지속. 밸류에이션 다소 높음.',
     newsItems: [{ headline: 'Mastercard cross-border volumes up 12% as travel booms', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'COST', companyName: 'Costco Wholesale Corp.',
@@ -119,7 +119,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 59,
     reasoning: 'RSI 61.3으로 중립 상단. 멤버십 갱신율 사상 최고. 밸류에이션 부담.',
     newsItems: [{ headline: 'Costco membership renewal rate hits all-time high of 93%', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'JNJ', companyName: 'Johnson & Johnson',
@@ -127,7 +127,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 64,
     reasoning: 'RSI 36.2로 과매도 근접. 탈크 소송 합의 진전. 의약품 파이프라인 견조.',
     newsItems: [{ headline: 'J&J reaches talc settlement progress, overhang clearing', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'HD', companyName: 'Home Depot Inc.',
@@ -135,7 +135,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 52,
     reasoning: 'RSI 49.8로 중립권. 주택 리모델링 수요 회복 중. 금리 하락 수혜 기대.',
     newsItems: [{ headline: 'Home Depot sees remodeling demand pick up as rates fall', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'NFLX', companyName: 'Netflix Inc.',
@@ -143,7 +143,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 57,
     reasoning: 'RSI 67.5로 과매수 근접. 광고 지원 요금제 성장. 추가 상승 여력 제한.',
     newsItems: [{ headline: 'Netflix ad-supported tier surpasses 40M monthly users', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'AMD', companyName: 'Advanced Micro Devices Inc.',
@@ -151,7 +151,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 76,
     reasoning: 'RSI 29.3으로 강한 과매도. MI300X GPU 데이터센터 채택 확대. 반등 확률 높음.',
     newsItems: [{ headline: 'AMD MI300X GPU wins major cloud provider contracts', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'ORCL', companyName: 'Oracle Corp.',
@@ -159,7 +159,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 54,
     reasoning: 'RSI 53.6으로 중립권. 클라우드 인프라 수주 증가. AI 데이터센터 수혜.',
     newsItems: [{ headline: 'Oracle cloud infrastructure bookings surge on AI demand', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'WMT', companyName: 'Walmart Inc.',
@@ -167,7 +167,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 57,
     reasoning: 'RSI 60.2로 중립 상단. 저가 소비재 수요 견조. e커머스 성장 지속.',
     newsItems: [{ headline: 'Walmart e-commerce growth accelerates to 21% YoY', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'PG', companyName: 'Procter & Gamble Co.',
@@ -175,7 +175,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 51,
     reasoning: 'RSI 43.7로 중립권. 소비재 수요 안정적. 인플레 완화로 마진 회복.',
     newsItems: [{ headline: 'P&G margins recover as commodity costs normalize', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'BAC', companyName: 'Bank of America Corp.',
@@ -183,7 +183,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 52,
     reasoning: 'RSI 47.3으로 중립권. 금리 안정화로 NII 압박 완화. 소비자 금융 견조.',
     newsItems: [{ headline: 'Bank of America net interest income stabilizes', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'CRM', companyName: 'Salesforce Inc.',
@@ -191,7 +191,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 55,
     reasoning: 'RSI 55.9로 중립권. Agentforce AI 채택 증가. 구독 매출 안정 성장.',
     newsItems: [{ headline: 'Salesforce Agentforce adoption accelerates across enterprise', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'KO', companyName: 'Coca-Cola Co.',
@@ -199,7 +199,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 51,
     reasoning: 'RSI 45.1로 중립권. 이머징마켓 성장 견조. 방어주로 하방 안정적.',
     newsItems: [{ headline: 'Coca-Cola emerging market volumes grow despite FX headwinds', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'PEP', companyName: 'PepsiCo Inc.',
@@ -207,7 +207,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 61,
     reasoning: 'RSI 38.9로 과매도 근접. 스낵 부문 수요 회복. 배당 성장 매력적.',
     newsItems: [{ headline: 'PepsiCo snack division volumes recover in North America', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'ABBV', companyName: 'AbbVie Inc.',
@@ -215,7 +215,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 53,
     reasoning: 'RSI 52.4로 중립권. Skyrizi/Rinvoq 성장으로 Humira 공백 보완 중.',
     newsItems: [{ headline: 'AbbVie Skyrizi and Rinvoq revenue offset Humira biosimilar impact', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'MRK', companyName: 'Merck & Co.',
@@ -223,7 +223,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 67,
     reasoning: 'RSI 33.7로 강한 과매도. Keytruda 특허 리스크 과도 반영. 매수 기회.',
     newsItems: [{ headline: 'Merck Keytruda patent cliff concerns appear overdone, analysts say', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'TSM', companyName: 'Taiwan Semiconductor Mfg.',
@@ -231,7 +231,7 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'HOLD', score: 58,
     reasoning: 'RSI 41.8로 중립권. AI칩 수요로 수주 사상 최대. 지정학적 리스크 상존.',
     newsItems: [{ headline: 'TSMC reports record orders driven by AI chip demand', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
   {
     ticker: 'INTC', companyName: 'Intel Corp.',
@@ -239,6 +239,6 @@ export const MOCK_STOCKS: StockAnalysis[] = [
     signal: 'BUY', score: 72,
     reasoning: 'RSI 26.8로 강한 과매도. 파운드리 사업 구조조정 진행 중. 극단적 저평가 구간.',
     newsItems: [{ headline: 'Intel foundry restructuring plan draws interest from potential partners', datetime: Date.now() / 1000, url: '#' }],
-    lastUpdated: new Date().toISOString(), isStale: false,
+    lastUpdated: new Date().toISOString(), isStale: false, ma20: null, ma50: null, volumeRatio: null,
   },
 ]

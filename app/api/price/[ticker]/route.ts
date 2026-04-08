@@ -7,13 +7,47 @@ import { unstable_cache } from 'next/cache'
 import { RSI } from 'technicalindicators'
 import type { StockAnalysis } from '@/lib/types'
 
-// RSI만으로 점수 계산 (Groq 없이)
-function rsiScore(rsi: number): number {
-  if (rsi < 30) return 75
-  if (rsi < 45) return 62
-  if (rsi < 55) return 50
-  if (rsi < 70) return 38
-  return 25
+function calcMA(closes: number[], period: number): number | null {
+  if (closes.length < period) return null
+  const slice = closes.slice(-period)
+  return slice.reduce((a, b) => a + b, 0) / period
+}
+
+function calcVolumeRatio(volumes: number[]): number | null {
+  if (volumes.length < 2) return null
+  const avg20 = volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / Math.min(20, volumes.length - 1)
+  const latest = volumes[volumes.length - 1]
+  return avg20 > 0 ? latest / avg20 : null
+}
+
+// RSI + MA 복합 점수 (Groq 없이)
+function technicalScore(
+  rsi: number,
+  price: number,
+  ma20: number | null,
+  ma50: number | null,
+): number {
+  let score = 50
+
+  // RSI 구간 기여 (-20 ~ +20)
+  if (rsi < 30) score += 20
+  else if (rsi < 45) score += 8
+  else if (rsi > 70) score -= 20
+  else if (rsi > 55) score -= 8
+
+  // MA 추세 기여 (-15 ~ +15)
+  if (ma20 !== null && ma50 !== null) {
+    if (ma20 > ma50) score += 8   // 골든크로스 구조
+    else score -= 8               // 데드크로스 구조
+
+    if (price > ma50) score += 7  // 장기 추세선 위
+    else score -= 7
+  } else if (ma20 !== null) {
+    if (price > ma20) score += 5
+    else score -= 5
+  }
+
+  return Math.max(5, Math.min(95, Math.round(score)))
 }
 
 const getPriceData = unstable_cache(
@@ -30,7 +64,10 @@ const getPriceData = unstable_cache(
     const quote = quoteResult.value
     const rsiValues = RSI.calculate({ values: quote.closes, period: 14 })
     const rsi = rsiValues.length > 0 ? rsiValues[rsiValues.length - 1] : 50
-    const score = rsiScore(rsi)
+    const ma20 = calcMA(quote.closes, 20)
+    const ma50 = calcMA(quote.closes, 50)
+    const volumeRatio = calcVolumeRatio(quote.volumes)
+    const score = technicalScore(rsi, quote.currentPrice, ma20, ma50)
     const newsItems = newsResult.status === 'fulfilled' ? newsResult.value : []
 
     return {
@@ -39,15 +76,18 @@ const getPriceData = unstable_cache(
       currentPrice: quote.currentPrice,
       changePercent: quote.changePercent,
       rsi,
+      ma20,
+      ma50,
+      volumeRatio,
       signal: determineSignal(score),
       score,
-      reasoning: '', // 다이얼로그 열 때 채워짐
+      reasoning: '',
       newsItems,
       lastUpdated: new Date().toISOString(),
       isStale: false,
     }
   },
-  ['price-data'],
+  ['price-data-v2'],
   { revalidate: 300 },
 )
 
