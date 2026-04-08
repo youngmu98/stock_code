@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { useStocks } from './StockProvider'
 
 interface Props {
@@ -74,11 +75,16 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
         <div className="space-y-4 mt-2 overflow-y-auto flex-1 pr-1">
           {/* 기술 지표 */}
           <div className="grid grid-cols-3 gap-3">
-            <Metric label="현재가" value={`$${stock.currentPrice.toFixed(2)}`} />
+            <Metric
+              label="현재가"
+              value={`$${stock.currentPrice.toFixed(2)}`}
+              tip="Finnhub 기준 15분 지연 시세입니다."
+            />
             <Metric
               label="일간 변동"
               value={`${stock.changePercent >= 0 ? '+' : ''}${stock.changePercent.toFixed(2)}%`}
               valueClass={stock.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}
+              tip="전일 종가 대비 오늘 현재가의 등락률입니다."
             />
             <Metric
               label="RSI(14)"
@@ -90,13 +96,28 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
                     ? 'text-red-400'
                     : 'text-zinc-200'
               }
+              tip="상대강도지수(RSI). 14일 기준 과매수·과매도를 나타냅니다. 30 이하는 과매도(매수 신호), 70 이상은 과매수(매도 신호)로 해석합니다."
             />
           </div>
 
           {/* MA 이동평균 지표 */}
           {(stock.ma20 !== null || stock.ma50 !== null) && (
             <div className="bg-zinc-800/30 rounded-lg p-3 space-y-2">
-              <p className="text-xs text-zinc-500 font-medium mb-1">이동평균 (이전 거래일 기준)</p>
+              <Tooltip>
+                <TooltipTrigger>
+                  <p className="text-xs text-zinc-500 font-medium mb-1 inline-flex items-center gap-1 cursor-help">
+                    이동평균 (이전 거래일 기준)
+                    <span className="text-zinc-600 text-[10px]">?</span>
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="max-w-[220px] leading-relaxed">
+                    MA20: 최근 20거래일 종가 평균. 단기 추세를 나타냅니다.<br />
+                    MA50: 최근 50거래일 종가 평균. 중기 추세를 나타냅니다.<br />
+                    현재가가 이동평균선 위에 있으면 상승 추세, 아래면 하락 추세로 봅니다.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
               <div className="grid grid-cols-2 gap-2">
                 {stock.ma20 !== null && (
                   <MaRow
@@ -114,14 +135,35 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
                 )}
               </div>
               {stock.ma20 !== null && stock.ma50 !== null && (
-                <p className="text-xs mt-1">
+                <p className="text-xs mt-1 flex items-center gap-1 flex-wrap">
                   {stock.ma20 > stock.ma50 ? (
-                    <span className="text-blue-400">↑ 단기MA &gt; 장기MA (골든크로스 구조)</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="text-blue-400 cursor-help">↑ 단기MA &gt; 장기MA (골든크로스 구조)</span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="max-w-[200px] leading-relaxed">골든크로스: 단기 이동평균(MA20)이 장기(MA50)를 위로 돌파한 구조. 상승 추세 전환의 신호로 해석합니다.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   ) : (
-                    <span className="text-red-400">↓ 단기MA &lt; 장기MA (데드크로스 구조)</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="text-red-400 cursor-help">↓ 단기MA &lt; 장기MA (데드크로스 구조)</span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="max-w-[200px] leading-relaxed">데드크로스: 단기 이동평균(MA20)이 장기(MA50) 아래로 떨어진 구조. 하락 추세의 신호로 해석합니다.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                   {stock.volumeRatio !== null && stock.volumeRatio >= 1.5 && (
-                    <span className="text-yellow-400 ml-2">· 거래량 {stock.volumeRatio.toFixed(1)}× 급증</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <span className="text-yellow-400 cursor-help">· 거래량 {stock.volumeRatio.toFixed(1)}× 급증</span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="max-w-[200px] leading-relaxed">최근 20거래일 평균 거래량 대비 현재 거래량이 {stock.volumeRatio.toFixed(1)}배입니다. 거래량 급증은 가격 움직임의 신뢰도를 높입니다.</p>
+                      </TooltipContent>
+                    </Tooltip>
                   )}
                 </p>
               )}
@@ -223,14 +265,30 @@ function Metric({
   label,
   value,
   valueClass = 'text-zinc-200',
+  tip,
 }: {
   label: string
   value: string
   valueClass?: string
+  tip?: string
 }) {
   return (
     <div className="bg-zinc-800/50 rounded-lg p-3 text-center">
-      <p className="text-xs text-zinc-400 mb-1">{label}</p>
+      {tip ? (
+        <Tooltip>
+          <TooltipTrigger>
+            <p className="text-xs text-zinc-400 mb-1 inline-flex items-center gap-1 cursor-help">
+              {label}
+              <span className="text-zinc-600 text-[10px]">?</span>
+            </p>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <p className="max-w-[200px] leading-relaxed">{tip}</p>
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <p className="text-xs text-zinc-400 mb-1">{label}</p>
+      )}
       <p className={`text-sm font-mono font-semibold ${valueClass}`}>{value}</p>
     </div>
   )
