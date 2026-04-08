@@ -67,7 +67,26 @@ export function StockProvider({ children }: { children: React.ReactNode }) {
   const cacheRef = useRef<CacheStore>(loadLS())
 
   const setStock = useCallback((data: StockAnalysis, fromAnalyze = false) => {
-    setStocks((prev) => new Map(prev).set(data.ticker, data))
+    setStocks((prev) => {
+      const existing = prev.get(data.ticker)
+      if (!fromAnalyze && existing?.reasoning) {
+        // 가격 갱신: AI 분석 결과는 유지하고 가격/지표 필드만 교체
+        return new Map(prev).set(data.ticker, {
+          ...existing,
+          currentPrice: data.currentPrice,
+          changePercent: data.changePercent,
+          rsi: data.rsi,
+          ma20: data.ma20,
+          ma50: data.ma50,
+          volumeRatio: data.volumeRatio,
+          score: data.score,
+          signal: data.signal,
+          lastUpdated: data.lastUpdated,
+        })
+      }
+      // 첫 로드이거나 AI 분석 완료 시: 전체 교체
+      return new Map(prev).set(data.ticker, data)
+    })
     if (fromAnalyze) {
       cacheRef.current = {
         ...cacheRef.current,
