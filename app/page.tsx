@@ -1,6 +1,5 @@
 import { TICKERS } from '@/lib/constants'
 import { StockCard } from '@/components/StockCard'
-import { AutoRefresh } from '@/components/AutoRefresh'
 
 export default function Home() {
   const now = new Date().toLocaleString('ko-KR', {
@@ -13,9 +12,6 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      {/* 5분마다 자동 새로고침 */}
-      <AutoRefresh intervalMs={300_000} />
-
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* 헤더 */}
         <div className="flex items-center justify-between mb-8">
@@ -30,7 +26,7 @@ export default function Home() {
           <p className="text-xs text-zinc-500">{now} (한국시간) 기준</p>
         </div>
 
-        {/* 종목 카드 그리드 — 각 카드가 독립적으로 API 호출 */}
+        {/* 종목 카드 그리드 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {TICKERS.map((ticker) => (
             <StockCard key={ticker} ticker={ticker} />
@@ -51,7 +47,7 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
             매도 (AI 점수 &lt; 40)
           </span>
-          <span className="ml-auto">5분 캐시 · RSI(14) + Claude Haiku 4.5 분석</span>
+          <span className="ml-auto">5분 캐시 · RSI(14) + Groq Llama 분석</span>
         </div>
       </div>
     </main>

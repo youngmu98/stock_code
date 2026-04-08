@@ -1,30 +1,30 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StockDialog } from './StockDialog'
-import type { StockAnalysis } from '@/lib/types'
+import { useStocks } from './StockProvider'
 
 interface Props {
   ticker: string
 }
 
 const SIGNAL_COLORS = {
-  BUY: 'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20',
+  BUY:  'bg-blue-500/10 border-blue-500/30 hover:bg-blue-500/20',
   SELL: 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20',
   HOLD: 'bg-zinc-500/10 border-zinc-500/30 hover:bg-zinc-500/20',
 }
 
 const SIGNAL_BADGE = {
-  BUY: 'bg-blue-500 hover:bg-blue-500 text-white',
+  BUY:  'bg-blue-500 hover:bg-blue-500 text-white',
   SELL: 'bg-red-500 hover:bg-red-500 text-white',
   HOLD: 'bg-zinc-600 hover:bg-zinc-600 text-white',
 }
 
 const SIGNAL_LABEL = {
-  BUY: '매수',
+  BUY:  '매수',
   SELL: '매도',
   HOLD: '관망',
 }
@@ -43,10 +43,6 @@ function getStrengthLabel(signal: 'BUY' | 'SELL' | 'HOLD', score: number): strin
   if (score >= 55) return '중립 (매수 우세)'
   if (score <= 45) return '중립 (매도 우세)'
   return '중립'
-}
-
-function getBarWidth(signal: 'BUY' | 'SELL' | 'HOLD', score: number): number {
-  return signal === 'SELL' ? 100 - score : score
 }
 
 function CardSkeleton() {
@@ -69,25 +65,15 @@ function CardSkeleton() {
 }
 
 export function StockCard({ ticker }: Props) {
-  const [stock, setStock] = useState<StockAnalysis | null>(null)
+  const { stocks, analyzing } = useStocks()
+  const stock = stocks.get(ticker)
   const [open, setOpen] = useState(false)
-
-  // 가격 데이터만 즉시 fetch (Groq 없음 → 빠름)
-  useEffect(() => {
-    fetch(`/api/price/${ticker}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data: StockAnalysis) => {
-        if (data?.ticker && typeof data.currentPrice === 'number') {
-          setStock(data)
-        }
-      })
-      .catch(() => {})
-  }, [ticker])
 
   if (!stock) return <CardSkeleton />
 
-  const barWidth = getBarWidth(stock.signal, stock.score)
+  const barWidth = stock.signal === 'SELL' ? 100 - stock.score : stock.score
   const strengthLabel = getStrengthLabel(stock.signal, stock.score)
+  const isAnalyzing = analyzing.has(ticker)
 
   return (
     <>
@@ -132,20 +118,24 @@ export function StockCard({ ticker }: Props) {
           <span className="text-lg font-mono font-semibold text-zinc-100">
             ${stock.currentPrice.toFixed(2)}
           </span>
-          <span
-            className={`text-sm font-mono ${
-              stock.changePercent >= 0 ? 'text-green-400' : 'text-red-400'
-            }`}
-          >
-            {stock.changePercent >= 0 ? '+' : ''}
-            {stock.changePercent.toFixed(2)}%
-          </span>
+          <div className="flex items-center gap-2">
+            {isAnalyzing && (
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-pulse" />
+            )}
+            <span
+              className={`text-sm font-mono ${
+                stock.changePercent >= 0 ? 'text-green-400' : 'text-red-400'
+              }`}
+            >
+              {stock.changePercent >= 0 ? '+' : ''}
+              {stock.changePercent.toFixed(2)}%
+            </span>
+          </div>
         </div>
       </Card>
 
       <StockDialog
         ticker={ticker}
-        initialStock={stock}
         open={open}
         onOpenChange={setOpen}
       />

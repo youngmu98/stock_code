@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,23 +8,22 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import type { StockAnalysis } from '@/lib/types'
+import { useStocks } from './StockProvider'
 
 interface Props {
   ticker: string
-  initialStock: StockAnalysis
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
 const SIGNAL_BADGE = {
-  BUY: 'bg-blue-500 text-white',
+  BUY:  'bg-blue-500 text-white',
   SELL: 'bg-red-500 text-white',
   HOLD: 'bg-zinc-500 text-white',
 }
 
 const SIGNAL_LABEL = {
-  BUY: '매수',
+  BUY:  '매수',
   SELL: '매도',
   HOLD: '관망',
 }
@@ -44,28 +42,13 @@ function formatKoreanTime(isoOrUnix: string | number): string {
   })
 }
 
-export function StockDialog({ ticker, initialStock, open, onOpenChange }: Props) {
-  const [stock, setStock] = useState<StockAnalysis>(initialStock)
-  const [analyzing, setAnalyzing] = useState(false)
+export function StockDialog({ ticker, open, onOpenChange }: Props) {
+  const { stocks, analyzing, refresh } = useStocks()
+  const stock = stocks.get(ticker)
+  const isAnalyzing = analyzing.has(ticker)
 
-  const fetchAnalysis = useCallback(() => {
-    setAnalyzing(true)
-    fetch(`/api/analyze/${ticker}?t=${Date.now()}`)
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data: StockAnalysis) => {
-        if (data?.ticker) setStock(data)
-      })
-      .catch(() => {})
-      .finally(() => setAnalyzing(false))
-  }, [ticker])
-
-  // 다이얼로그 열릴 때 AI 분석 fetch
-  useEffect(() => {
-    if (open) {
-      setStock(initialStock) // 가격 데이터 먼저 표시
-      fetchAnalysis()
-    }
-  }, [open]) // eslint-disable-line
+  // 데이터 없으면 다이얼로그 자체를 열지 않음
+  if (!stock) return null
 
   const updatedAt = formatKoreanTime(stock.lastUpdated)
 
@@ -114,16 +97,16 @@ export function StockDialog({ ticker, initialStock, open, onOpenChange }: Props)
           <div className="bg-zinc-800/50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs text-zinc-400 font-medium">AI 분석 및 전망</p>
-              {!analyzing && (
+              {!isAnalyzing && (
                 <button
-                  onClick={fetchAnalysis}
+                  onClick={() => refresh(ticker)}
                   className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
                   ↻ 갱신
                 </button>
               )}
             </div>
-            {analyzing ? (
+            {isAnalyzing && !stock.reasoning ? (
               <div className="space-y-2">
                 <Skeleton className="h-3 w-full bg-zinc-700" />
                 <Skeleton className="h-3 w-4/5 bg-zinc-700" />
@@ -132,6 +115,9 @@ export function StockDialog({ ticker, initialStock, open, onOpenChange }: Props)
             ) : (
               <p className="text-sm text-zinc-200 leading-relaxed whitespace-pre-line">
                 {stock.reasoning || 'AI 분석을 불러오는 중...'}
+                {isAnalyzing && (
+                  <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-zinc-500 animate-pulse align-middle" />
+                )}
               </p>
             )}
           </div>
