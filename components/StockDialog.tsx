@@ -54,7 +54,7 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-lg">
+      <DialogContent className="bg-zinc-900 border-zinc-800 text-zinc-100 max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center gap-3">
             <div>
@@ -71,7 +71,7 @@ export function StockDialog({ ticker, open, onOpenChange }: Props) {
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 mt-2">
+        <div className="space-y-4 mt-2 overflow-y-auto flex-1 pr-1">
           {/* 기술 지표 */}
           <div className="grid grid-cols-3 gap-3">
             <Metric label="현재가" value={`$${stock.currentPrice.toFixed(2)}`} />
