@@ -32,9 +32,8 @@ export default function Home() {
 
         {/* 종목 카드 그리드 — 각 카드가 독립적으로 API 호출 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {/* 2초 간격 순차 요청 → Groq 30 RPM 제한 내 유지 (캐시 히트 시 즉시 응답) */}
-          {TICKERS.map((ticker, i) => (
-            <StockCard key={ticker} ticker={ticker} delay={i * 2000} />
+          {TICKERS.map((ticker) => (
+            <StockCard key={ticker} ticker={ticker} />
           ))}
         </div>
 
