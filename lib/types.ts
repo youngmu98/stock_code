@@ -16,13 +16,15 @@ export interface StockAnalysis {
   rsi: number
   ma20: number | null
   ma50: number | null
-  volumeRatio: number | null  // 현재 거래량 / 20일 평균 거래량
+  volumeRatio: number | null
   signal: Signal
   score: number
   reasoning: string
   newsItems: NewsItem[]
   lastUpdated: string // ISO string
   isStale: boolean
+  market?: 'US' | 'KR'  // 시장 구분
+  currency?: 'USD' | 'KRW'
 }
 
 export interface ReplayEntry {

@@ -30,7 +30,9 @@
       "Bash(npx next:*)",
       "Bash(git push:*)",
       "Bash(git commit -m 'fix: 다이얼로그 스크롤 추가 \\(콘텐츠 잘림 방지\\):*)",
-      "Bash(npx shadcn@latest add tooltip --yes)"
+      "Bash(npx shadcn@latest add tooltip --yes)",
+      "Bash(git commit -m 'fix: 갱신 시 기존 AI 분석 유지 \\(가격 필드만 교체\\):*)",
+      "Bash(git commit -m 'feat: 종목 30개 → 50개 확장 \\(시가총액 상위 50\\):*)"
     ]
   }
 }
