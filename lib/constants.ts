@@ -1,4 +1,4 @@
-// 미국 시가총액 상위 30종목 (2025년 기준)
+// 미국 시가총액 상위 50종목 (2025년 기준)
 export const TICKERS = [
   'AAPL', 'NVDA', 'MSFT', 'GOOGL', 'AMZN',
   'META', 'TSLA', 'AVGO', 'WMT',   'LLY',
@@ -6,6 +6,10 @@ export const TICKERS = [
   'COST', 'PEP',  'NFLX', 'JNJ',   'PG',
   'ORCL', 'HD',   'BAC',  'AMD',   'CRM',
   'ABT',  'KO',   'MRK',  'ABBV',  'TSM',
+  'GS',   'ISRG', 'CAT',  'NOW',   'PLTR',
+  'INTU', 'AMGN', 'TXN',  'QCOM',  'SPGI',
+  'BLK',  'MS',   'UBER', 'AXP',   'BKNG',
+  'RTX',  'TMO',  'NEE',  'WFC',   'ETN',
 ] as const
 export type Ticker = (typeof TICKERS)[number]
 
@@ -40,4 +44,24 @@ export const COMPANIES: Record<string, string> = {
   MRK:   'Merck & Co.',
   ABBV:  'AbbVie Inc.',
   TSM:   'Taiwan Semiconductor Mfg.',
+  GS:    'Goldman Sachs Group Inc.',
+  ISRG:  'Intuitive Surgical Inc.',
+  CAT:   'Caterpillar Inc.',
+  NOW:   'ServiceNow Inc.',
+  PLTR:  'Palantir Technologies Inc.',
+  INTU:  'Intuit Inc.',
+  AMGN:  'Amgen Inc.',
+  TXN:   'Texas Instruments Inc.',
+  QCOM:  'Qualcomm Inc.',
+  SPGI:  'S&P Global Inc.',
+  BLK:   'BlackRock Inc.',
+  MS:    'Morgan Stanley',
+  UBER:  'Uber Technologies Inc.',
+  AXP:   'American Express Co.',
+  BKNG:  'Booking Holdings Inc.',
+  RTX:   'RTX Corp.',
+  TMO:   'Thermo Fisher Scientific Inc.',
+  NEE:   'NextEra Energy Inc.',
+  WFC:   'Wells Fargo & Co.',
+  ETN:   'Eaton Corp.',
 }
